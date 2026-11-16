@@ -6,7 +6,6 @@ public class Main {
     public static void main(String[] args) {
 
         EntradaView entradaView = new EntradaView();
-
         entradaView.iniciar();
     }
 }
