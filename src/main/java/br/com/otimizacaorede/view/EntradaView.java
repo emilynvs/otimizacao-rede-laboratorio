@@ -4,6 +4,7 @@ import br.com.otimizacaorede.dao.GrafoDAO;
 import br.com.otimizacaorede.model.ResultadoKruskal;
 import br.com.otimizacaorede.service.KruskalService;
 
+import javax.swing.*;
 import java.util.Scanner;
 
 public class EntradaView {
@@ -71,6 +72,7 @@ public class EntradaView {
                 servico.encontrarArvoreMinima(grafoDAO);
 
         resultadoView.exibir(resultado);
+        abrirGrafoVisual(resultado, grafoDAO);
     }
 
     public void mostrarTitulo() {
@@ -103,5 +105,18 @@ public class EntradaView {
 
     public void mostrarMensagem(String mensagem) {
         System.out.println(mensagem);
+    }
+
+    private void abrirGrafoVisual(ResultadoKruskal resultado, GrafoDAO grafoDAO) {
+        SwingUtilities.invokeLater(() -> {
+            JFrame frame = new JFrame("Otimização da Rede do Laboratório - Grafo");
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setSize(550, 550);
+
+            frame.add(new PainelView(resultado, grafoDAO.getComputadores()));
+
+            frame.setLocationRelativeTo(null);
+            frame.setVisible(true);
+        });
     }
 }
