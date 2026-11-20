@@ -6,9 +6,8 @@ import br.com.otimizacaorede.model.ResultadoKruskal;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 public class PainelView extends JPanel {
     private ResultadoKruskal resultado;
@@ -19,11 +18,11 @@ public class PainelView extends JPanel {
         this.resultado = resultado;
         this.computadores = computadores;
         this.posicoes = new HashMap<>();
-
-        gerarPosicoesDinamicas(computadores.size());
+        List<Computador> listaOrdenada = ordenarPorConexao(computadores, resultado.getArestasSelecionadas());
+        gerarPosicoesDinamicas(listaOrdenada.size(), listaOrdenada);
     }
 
-    private void gerarPosicoesDinamicas(int n) {
+    private void gerarPosicoesDinamicas(int n, List<Computador> listaOrdenada) {
         if (n == 0) return;
 
         int centroX = 220;
@@ -31,7 +30,7 @@ public class PainelView extends JPanel {
         int raioDoLayout = 140;
 
         for (int i = 0; i < n; i++) {
-            Computador pc = computadores.get(i);
+            Computador pc = listaOrdenada.get(i);
 
             double angulo = 2 * Math.PI * i / n;
 
@@ -83,6 +82,50 @@ public class PainelView extends JPanel {
             g2d.drawOval(p.x, p.y, raioNo, raioNo);
 
             g2d.drawString(pc.getIdentificacao(), p.x + raioNo / 2 - g2d.getFontMetrics().stringWidth(pc.getIdentificacao()) / 2, p.y + raioNo / 2 + 5);
+        }
+    }
+
+    private List<Computador> ordenarPorConexao(List<Computador> nos, List<Aresta> arestas){
+        if(nos.isEmpty() || arestas == null) return nos;
+
+        Map<String, List<String>> adj = new HashMap<>();
+
+        for(Computador pc: nos) {
+            adj.put(pc.getIdentificacao(), new ArrayList<>());
+        }
+
+        for(Aresta a : arestas){
+            String origem = a.getOrigem().getIdentificacao();
+            String destino = a.getDestino().getIdentificacao();
+            if(adj.containsKey(origem) && adj.containsKey(destino)){
+                adj.get(origem).add(destino);
+                adj.get(destino).add(origem);
+            }
+        }
+
+        Map<String, Computador> porId = new HashMap<>();
+        for (Computador pc : nos){
+            porId.put(pc.getIdentificacao(), pc);
+        }
+
+        Set<String> visitados = new HashSet<>();
+        List<Computador> ordenados = new ArrayList<>();
+
+        for(Computador pc : nos){
+            if(!visitados.contains(pc.getIdentificacao())){
+                buscarEmProfundidade(pc.getIdentificacao(), adj, visitados, ordenados, porId);
+            }
+        }
+        return ordenados;
+    }
+
+    private void buscarEmProfundidade(String atual, Map<String, List<String>> adj, Set<String> visitados, List<Computador> ordenados, Map<String, Computador> porId){
+        visitados.add(atual);
+        ordenados.add(porId.get(atual));
+        for(String vizinho : adj.get(atual)){
+            if(!visitados.contains(vizinho)){
+                buscarEmProfundidade(vizinho, adj, visitados, ordenados, porId);
+            }
         }
     }
 }
